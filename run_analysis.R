@@ -114,6 +114,11 @@ pandoc.table(as.data.frame(independent_tidydataset), split.table = 80, style = '
              caption = "Independent Tidy Dataset",
              keep.line.breaks = TRUE)
 
+write.table(independent_tidydataset, file = "project_tidy_dataset.txt", row.name=FALSE)
+## writes the tidy dataset to .txt file in the local project directory
+
+write.csv(independent_tidydataset, file = "project_tidy_dataset.csv")
+## writes the tidy dataset to .csv file in the local project directory
 
 
 

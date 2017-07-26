@@ -1,9 +1,9 @@
 ---
 title: "Cookbook for Final Project for Getting and Cleaning Data Course"
-author: Andrew D. Stewart
+author: "Andrew D. Stewart"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup  }
@@ -187,7 +187,7 @@ tidy_colnames <- c("subject number", "body acceleration mean-X", "body accelerat
 names(independent_tidydataset) <- tidy_colnames
 ```
 
-### Step 8: Print the Tidy Dataset in a read-able output format
+### Step 8: Print the Tidy Dataset in a read-able output format write to .txt and .csv files
 ### Use `pander` to print a neat, wide data table across several pages.
 
 Each column of the **Wide Dataset** is linked to rows in *Subject Number*.
@@ -201,6 +201,9 @@ library(pander)
 pandoc.table(as.data.frame(independent_tidydataset), split.table = 80, style = 'rmarkdown', 
              caption = "Independent Tidy Dataset",
              keep.line.breaks = TRUE)
+
+write.table(independent_tidydataset, file = "project_tidy_dataset.txt", row.name=FALSE)
+## writes the tidy dataset to .txt file in the local project directory
 
 write.csv(independent_tidydataset, file = "project_tidy_dataset.csv")
 ## writes the tidy dataset to .csv file in the local project directory

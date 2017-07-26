@@ -392,8 +392,8 @@ tidy_colnames &lt;- c(&quot;subject number&quot;, &quot;body acceleration mean-X
 ## Apply new tidy column names to the Tidy Dataset:
 names(independent_tidydataset) &lt;- tidy_colnames</code></pre>
 </div>
-<div id="step-8-print-the-tidy-dataset-in-a-read-able-output-format" class="section level3">
-<h3>Step 8: Print the Tidy Dataset in a read-able output format</h3>
+<div id="step-8-print-the-tidy-dataset-in-a-read-able-output-format-write-to-.txt-and-.csv-files" class="section level3">
+<h3>Step 8: Print the Tidy Dataset in a read-able output format write to .txt and .csv files</h3>
 </div>
 <div id="use-pander-to-print-a-neat-wide-data-table-across-several-pages." class="section level3">
 <h3>Use <code>pander</code> to print a neat, wide data table across several pages.</h3>
@@ -1071,7 +1071,10 @@ pandoc.table(as.data.frame(independent_tidydataset), split.table = 80, style = &
 ## |              -0.8057               |
 ## |              -0.8402               |
 ## |              -0.8104               |</code></pre>
-<pre class="r"><code>write.csv(independent_tidydataset, file = &quot;project_tidy_dataset.csv&quot;)
+<pre class="r"><code>write.table(independent_tidydataset, file = &quot;project_tidy_dataset.txt&quot;, row.name = FALSE)
+## writes the tidy dataset to .txt file in the local project directory
+
+write.csv(independent_tidydataset, file = &quot;project_tidy_dataset.csv&quot;)
 ## writes the tidy dataset to .csv file in the local project directory</code></pre>
 </div>
 </div>
