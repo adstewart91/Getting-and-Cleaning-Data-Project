@@ -107,7 +107,14 @@ tidy_colnames <- c("subject number", "body acceleration mean-X", "body accelerat
 ## Apply new tidy column names to the Tidy Dataset:
 names(independent_tidydataset) <- tidy_colnames
 
-print.table(independent_tidydataset)
+library(pander)
+## Prints out full datatable in rmarkdown format spanning multiple pages
+## Tidy Data Set Rows are the Subjects linked to each Observation Column of Mean and Std Dev
+pandoc.table(as.data.frame(independent_tidydataset), split.table = 80, style = 'rmarkdown', 
+             caption = "Independent Tidy Dataset",
+             keep.line.breaks = TRUE)
+
+
 
 
 
