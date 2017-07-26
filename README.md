@@ -20,6 +20,7 @@ Final Project for Getting and Cleaning Data Course
 ###     Tidy Dataset Output
         4) *project_tidy_dataset.txt* -- **.TXT File** containing the wide tidy dataset
                 `row.names = FALSE` column names are in first line readable as a character vector
+                
            *project_tidy_dataset.csv* -- **.CSV File** containing the wide tidy dataset
                 rows are numbered to the Subject Number -- so, they can be cross-indexed
         
