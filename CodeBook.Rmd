@@ -1,0 +1,210 @@
+---
+title: "Cookbook for Final Project for Getting and Cleaning Data Course"
+author: "Andrew D. Stewart"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup  }
+knitr::opts_chunk$set(echo = TRUE, tidy = TRUE)
+
+```
+
+## Final Project for Getting and Cleaning Data Course
+## Cookbook for this Assignment
+
+### Script Assignment: You should create one R script called run_analysis.R that does the following.
+
+1. Merges the training and the test sets to create one data set.
+2. Extracts only the measurements on the mean and standard deviation for each measurement.
+3. Uses descriptive activity names to name the activities in the data set
+4. Appropriately labels the data set with descriptive variable names.
+5. From the data set in step 4, creates a second, independent tidy data set with 
+   the average of each variable for each activity and each subject.
+
+### Step 1: Library Calls and Helper Function
+Helper `function` **create_data_tbl(file_name)** reads data into dataframe tbl from a provided **file_name** and returns a `tbl_df` dataframe table
+
+```{r     }
+
+library(data.table)
+library(dplyr)
+
+## Function reads a dataframe from a provided file_name and returns a dplyr dataframe tbl
+create_data_tbl <- function (file_name) {
+
+        data <- read.table(file_name)
+        data_tble <- data.table(data)
+        data_tble <- tbl_df(data_tble)
+}
+
+```
+
+### Step 2: Setup Data Directory Names and Read-in the Data from data files
+Also, reads-in the activity labels and data labels.  
+Each data file is stored as a `tbl_df` from the Helper function `create_data_tbl(file_name)` using `file.path` and **_directory** name as **file_name** argument to the function.
+
+```{r }
+
+## Create directory names:
+test_directory <- c("UCI HAR Dataset/test/")    ## Directory location for Test Data
+train_directory <- c("UCI HAR Dataset/train/")  ## Directory location for Train Data
+data_directory <- c("UCI HAR Dataset/")         ## Base Directory location data
+
+## Read Test Data, Training Data, and Labels (Total of 8 .txt Files):
+x_test_data <- create_data_tbl(file.path(test_directory,"X_test.txt"))
+y_test_data <- create_data_tbl(file.path(test_directory,"y_test.txt"))
+subject_test_data <- create_data_tbl(file.path(test_directory,"subject_test.txt"))
+
+x_train_data <- create_data_tbl(file.path(train_directory,"X_train.txt"))
+y_train_data <- create_data_tbl(file.path(train_directory,"y_train.txt"))
+subject_train_data <- create_data_tbl(file.path(train_directory,"subject_train.txt"))
+
+activity_labels <- create_data_tbl(file.path(data_directory,"activity_labels.txt"))
+data_labels <- create_data_tbl(file.path(data_directory,"features.txt"))
+
+```
+### Step 3: Combine Test and Training Data by Rows
+subjects, test and training data are row-combined into 3 data tables of **subjects_combined, y_data_combined, x_data_combined** using `bind_rows`.
+```{r }
+
+## Combine Test and Training Data by Rows
+subjects_combined <- bind_rows(subject_test_data, subject_train_data)
+y_data_combined <- bind_rows(y_test_data, y_train_data)
+x_data_combined <- bind_rows(x_test_data, x_train_data)
+
+```
+
+### Step 4:  Update Data with descriptive column names
+
+All 561 observation data column names are updated with **data_labels** from **features.txt**.
+Activity columns names given **acty_num** and **acty_name**.
+Subject column name given **subject_num**.
+
+Creates a new **activity_combined** data table that combines the long list of test numbers with the 6 activity labels, keyed by **acty_num** using `merge` function with `sort = FALSE` to prevent re-sorting the new table.
+
+### Satisfies Project requirement: **3. Uses descriptive activity names to name the activities in the data set**.
+
+**All column names will be given more "tidy names"" later when the tidy dataset is formed**.
+
+```{r }
+## Update Data with descriptive column names
+activity_labels <- rename(activity_labels, "acty_num" = "V1", "acty_name" = "V2")
+subjects_combined <- rename(subjects_combined, "subject_num" = "V1")
+y_data_combined <- rename(y_data_combined, "acty_num" = "V1")
+x_data_combined <- rename_all(x_data_combined, funs(data_labels$V2))
+
+## Bring Activity Numbers together with Activity Labels:
+activity_combined <- merge(y_data_combined, activity_labels, key = acty_num, sort = FALSE)
+```
+
+### Step 5:  Column Bind All Data Into One Large Combined Dataset *combined_dataset*:
+
+Display characteristics of *combined_dataset* using `str(combined_dataset)` to demonstrate that the R script satisfies the **Project requirement:**
+### **1. Merges the training and the test sets to create one data set.**
+
+Data rows are by Subject Number and the dataset preserves the activity number with corresponding activity number keyed-activity labels.  
+
+```{r }
+## Column Bind All Data Into One Large Combined Dataset:
+combined_dataset <- cbind(subjects_combined, activity_combined, x_data_combined)
+
+str(combined_dataset) ## Provides detailed summary of Large Combined Dataset
+```
+### Step 6:  Extract the measurements on the mean and standard deviation for each measurement:
+
+### Logically extract measurement data and summarize by subject number the mean of the measurements' mean and standard deviation.
+
+### Satisfies the Project Requirement for R Script that:  **"2. Extracts only the measurements on the mean and standard deviation for each measurement."**
+
+There are 17 measurements x 33 computed variables in this 561-column dataset (17 x 33 = 561).  
+The measurements are: tBodyAcc-XYZ, tGravityAcc-XYZ, tBodyAccJerk-XYZ, tBodyGyro-XYZ, tBodyGyroJerk-XYZ, tBodyAccMag, and tGravityAccMag -- where -XYZ means there are 3 measurements for each.  
+
+All 17 measurements have a mean and a standard deviation measuremnt.  Script extracts these 2 x 17 measurements for 34 total measurements to form the data that will go into the tidy dataset.
+
+`grepel` is used with string combinations to form a series of 4 logical vectors from the **data_labels** vector of measurment names.  
+The 4 logical vectors are logically-**Or**-ed (`|`) together to a **final_vector** that is logically used to create a **final_datanames** character vector corresponding to the column names of measurements to be extracted.
+
+The **final_extract** data table is created by rows of Subject Numbers and the extracted measurement column names from **final_datanames**.
+
+The **final_extract** data table is then grouped (`group_by`) the Subject Number (**subject_group**).
+
+The tidy dataset is initially formed by calling `summarize_all` on the grouped data table, **subject_group** with a `funs(mean)` parameter to summarize the mean of the 34 mean and standard deviation measurements, by **subject_num**.
+
+```{r }
+## Total 17 measurements: (15) of tBodyAcc-XYZ and tBodyGyro-XYZ, (1) tBodyAccMag, & (1) tGravityAccMag
+## 17 measurements over: (1) mean and (2) standard deviation = 34 columns to extract:
+
+## First, Logical Vectors of columns with measurements named: "tBody" AND with: (mean or std): 
+measure_means_vector <- grepl("^(tBody)", data_labels$V2) & grepl("mean",data_labels$V2)
+measure_std_vector <- grepl("^(tBody)", data_labels$V2) & grepl("std",data_labels$V2)
+
+## Second, Logical Vector columns with measurement named: "tGravity" AND with: (mean or std):
+measure_gravity_vector_mean <- grepl("^(tGravityAccMag)", data_labels$V2) & grepl("mean",data_labels$V2)
+measure_gravity_vector_std <- grepl("^(tGravityAccMag)", data_labels$V2) & grepl("std",data_labels$V2)
+
+## Combine both logical vectors of columns and assemble measurment names to be extracted:
+final_vector <- (measure_means_vector | measure_std_vector | measure_gravity_vector_mean | 
+                         measure_gravity_vector_std) 
+        ## OR combines mean and std columns together
+
+final_datanames <- as.character(data_labels$V2[final_vector]) 
+        ## character vector of measurement names
+
+## Extract the subject number column and measurement columns:
+final_extract <- tbl_df(combined_dataset[,c("subject_num", final_datanames)])
+
+## Create Tidy Dataset grouped by subject number:
+subject_group <- group_by(final_extract, subject_num) ## group by subject number
+independent_tidydataset <- summarize_all(subject_group, funs(mean)) ## summarize with mean
+```
+
+### Step 7: Provide read-able column names to the data for a Tidy Dataset
+
+### Satisfies Project Requirement:  5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+
+Tidy Data Set Rows are the Subjects and are linked to each Observation Column of Mean and Std Dev.
+
+```{r }
+## Tidy-Up column names of the results with read-able column names:
+tidy_colnames <- c("subject number", "body acceleration mean-X", "body acceleration mean-Y",      
+"body acceleration mean-Z", "body acceleration std dev-X", "body acceleration std dev-Y",      
+"body acceleration std dev-Z", "body acceleration jerk mean-X", "body acceleration jerk mean-Y",
+"body acceleration jerk mean-Z", "body acceleration jerk std dev-X", "body acceleration jerk std dev-Y", 
+"body acceleration jerk std dev-Z", "body gyro mean-X", "body gyro mean-Y",    
+"body gyro mean-Z", "body gyro std dev-X", "body gyro std dev-Y",      
+"body gyro std dev-Z", "body gyro jerk mean-X", "body gyro jerk mean-Y", 
+"body gyro jerk mean-Z", "body gyro jerk std dev-X", "body gyro jerk std dev-Y", 
+"body gyro jerk std dev-Z", "body acceleration magnitude mean",
+"body acceleration magnitude std dev", "gravity acceleration magnitude mean", 
+"gravity acceleration magnitude std dev", "body accleration jerk magnitude mean", 
+"body accleration jerk magnitude std dev", "body gyro magnitude mean", 
+"body gyro magnitude std dev", "body gyro jerk magnitude mean",
+"body gyro jerk magnitude std dev")
+
+## Apply new tidy column names to the Tidy Dataset:
+names(independent_tidydataset) <- tidy_colnames
+```
+
+### Step 8: Print the Tidy Dataset in a read-able output format
+### Use `pander` to print a neat, wide data table across several pages.
+
+Each column of the **Wide Dataset** is linked to rows in *Subject Number*.
+
+### Satisfies requirement that:  each variable you measure should be in one column; and each different observation of that variable should be in a different row.
+```{r  }
+library(pander)
+
+## Prints out full datatable in rmarkdown format spanning multiple pages
+## Tidy Data Set Rows are the Subjects linked to each Observation Column of Mean and Std Dev
+pandoc.table(as.data.frame(independent_tidydataset), split.table = 80, style = 'rmarkdown', 
+             caption = "Independent Tidy Dataset",
+             keep.line.breaks = TRUE)
+
+write.csv(independent_tidydataset, file = "project_tidy_dataset.csv")
+## writes the tidy dataset to .csv file in the local project directory
+
+```
+
+
