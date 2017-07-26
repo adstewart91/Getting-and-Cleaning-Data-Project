@@ -6,7 +6,7 @@ output:
   html_document: default
 ---
 
-```{r setup}
+```{r setup  }
 knitr::opts_chunk$set(echo = TRUE, tidy = TRUE)
 
 ```
@@ -24,9 +24,9 @@ knitr::opts_chunk$set(echo = TRUE, tidy = TRUE)
    the average of each variable for each activity and each subject.
 
 ### Step 1: Library Calls and Helper Function
-Helper Function is for reading data into dataframe tbl from a provided file_name
+Helper `function` **create_data_tbl(file_name)** reads data into dataframe tbl from a provided **file_name** and returns a `tbl_df` dataframe table
 
-```{r }
+```{r     }
 
 library(data.table)
 library(dplyr)
@@ -42,7 +42,8 @@ create_data_tbl <- function (file_name) {
 ```
 
 ### Step 2: Setup Data Directory Names and Read-in the Data from data files
-Also, reads-in the activity labels and data labels
+Also, reads-in the activity labels and data labels.  
+Each data file is stored as a `tbl_df` from the Helper function `create_data_tbl(file_name)` using `file.path` and **_directory** name as **file_name** argument to the function.
 
 ```{r }
 
@@ -65,7 +66,7 @@ data_labels <- create_data_tbl(file.path(data_directory,"features.txt"))
 
 ```
 ### Step 3: Combine Test and Training Data by Rows
-subjects, test and training data are row-combined into 3 data tables of *subjects_combined, y_data_combined, x_data_combined*
+subjects, test and training data are row-combined into 3 data tables of **subjects_combined, y_data_combined, x_data_combined** using `bind_rows`.
 ```{r }
 
 ## Combine Test and Training Data by Rows
@@ -77,13 +78,13 @@ x_data_combined <- bind_rows(x_test_data, x_train_data)
 
 ### Step 4:  Update Data with descriptive column names
 
-All 561 observation data column names updated with *data_labels* from *features.txt*.
-Activity columns names given *acty_num* and *acty_name*.
-Subject column name given *subject_num*.
+All 561 observation data column names are updated with **data_labels** from **features.txt**.
+Activity columns names given **acty_num** and **acty_name**.
+Subject column name given **subject_num**.
 
-Creates a new *activity_combined* data table that combines the long list of test numbers with the 6 activity labels, keyed by *acty_num* using `merge` function with `sort = FALSE` to prevent re-sorting the new table.
+Creates a new **activity_combined** data table that combines the long list of test numbers with the 6 activity labels, keyed by **acty_num** using `merge` function with `sort = FALSE` to prevent re-sorting the new table.
 
-### Satisfies requirement: **3. Uses descriptive activity names to name the activities in the data set**.
+### Satisfies Project requirement: **3. Uses descriptive activity names to name the activities in the data set**.
 
 **All column names will be given more "tidy names"" later when the tidy dataset is formed**.
 
@@ -100,7 +101,7 @@ activity_combined <- merge(y_data_combined, activity_labels, key = acty_num, sor
 
 ### Step 5:  Column Bind All Data Into One Large Combined Dataset *combined_dataset*:
 
-Display characteristics of *combined_dataset* using `str(combined_dataset)` to demonstrate that the R script satisfies the requirement:
+Display characteristics of *combined_dataset* using `str(combined_dataset)` to demonstrate that the R script satisfies the **Project requirement:**
 ### **1. Merges the training and the test sets to create one data set.**
 
 Data rows are by Subject Number and the dataset preserves the activity number with corresponding activity number keyed-activity labels.  
@@ -115,20 +116,21 @@ str(combined_dataset) ## Provides detailed summary of Large Combined Dataset
 
 ### Logically extract measurement data and summarize by subject number the mean of the measurements' mean and standard deviation.
 
-### Satisfies Requirement for R Script that:  "2. Extracts only the measurements on the mean and standard deviation for each measurement."
+### Satisfies the Project Requirement for R Script that:  **"2. Extracts only the measurements on the mean and standard deviation for each measurement."**
 
-There are 17 measurements x 33 computed variables in this 561-column dataset (17 x 33 = 561).  The measurements are: tBodyAcc-XYZ, tGravityAcc-XYZ, tBodyAccJerk-XYZ, tBodyGyro-XYZ, tBodyGyroJerk-XYZ, tBodyAccMag, and tGravityAccMag -- where -XYZ means there are 3 measurements for each.  
+There are 17 measurements x 33 computed variables in this 561-column dataset (17 x 33 = 561).  
+The measurements are: tBodyAcc-XYZ, tGravityAcc-XYZ, tBodyAccJerk-XYZ, tBodyGyro-XYZ, tBodyGyroJerk-XYZ, tBodyAccMag, and tGravityAccMag -- where -XYZ means there are 3 measurements for each.  
 
-All 17 measurements have a mean and a standard deviation measuremnt.  Script extracts these 2 x 17 measurements for 34 total measurements to form the data of the tidy dataset.
+All 17 measurements have a mean and a standard deviation measuremnt.  Script extracts these 2 x 17 measurements for 34 total measurements to form the data that will go into the tidy dataset.
 
-`grepel` is used with string combinations to form a series of 4 logical vectors from the *data_labels* vector of measurment names.  
-The 4 logical vectors are logically-or-ed `|` together to a *final_vector* that is logically used to create a *final_datanames* character vector corresponding to the column names of measurements to be extracted.
+`grepel` is used with string combinations to form a series of 4 logical vectors from the **data_labels** vector of measurment names.  
+The 4 logical vectors are logically-**Or**-ed (`|`) together to a **final_vector** that is logically used to create a **final_datanames** character vector corresponding to the column names of measurements to be extracted.
 
-The *final_extract* data table is created by rows of Subject Numbers and the extracted measurement column names from *final_datanames*.
+The **final_extract** data table is created by rows of Subject Numbers and the extracted measurement column names from **final_datanames**.
 
-The *final_extract* data table is then grouped (`group_by`) the Subject Number (*subject_group*).
+The **final_extract** data table is then grouped (`group_by`) the Subject Number (**subject_group**).
 
-The tidy dataset is initially formed by calling `summarize_all` on the grouped data table, *subject_group* with a `funs(mean)` parameter to summarize the mean of the 34 mean and standard deviation measurements, by *subject_num*.
+The tidy dataset is initially formed by calling `summarize_all` on the grouped data table, **subject_group** with a `funs(mean)` parameter to summarize the mean of the 34 mean and standard deviation measurements, by **subject_num**.
 
 ```{r }
 ## Total 17 measurements: (15) of tBodyAcc-XYZ and tBodyGyro-XYZ, (1) tBodyAccMag, & (1) tGravityAccMag
@@ -160,7 +162,7 @@ independent_tidydataset <- summarize_all(subject_group, funs(mean)) ## summarize
 
 ### Step 7: Provide read-able column names to the data for a Tidy Dataset
 
-### Satisfies requirement:  5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+### Satisfies Project Requirement:  5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
 
 Tidy Data Set Rows are the Subjects and are linked to each Observation Column of Mean and Std Dev.
 
@@ -199,7 +201,8 @@ library(pander)
 pandoc.table(as.data.frame(independent_tidydataset), split.table = 80, style = 'rmarkdown', 
              caption = "Independent Tidy Dataset",
              keep.line.breaks = TRUE)
-## print.table(independent_tidydataset)
+
+
 ```
 
 
