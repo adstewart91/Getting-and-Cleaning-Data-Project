@@ -17,8 +17,11 @@ Final Project for Getting and Cleaning Data Course
 ###     R Script        
         3) *run_analysis.R* -- **R Script** for the project
 
-###     Tidy Dataset
-        4) *project_tidy_dataset.csv* -- **.CSV File** containing the wide tidy dataset
+###     Tidy Dataset Output
+        4) *project_tidy_dataset.txt* -- **.TXT File** containing the wide tidy dataset
+                `row.names = FALSE` column names are in first line readable as a character vector
+           *project_tidy_dataset.csv* -- **.CSV File** containing the wide tidy dataset
+                rows are numbered to the Subject Number -- so, they can be cross-indexed
         
 ###     Other Files:        
         **Original RAW Data files** are located in the folder **UCI HAR Dataset**
