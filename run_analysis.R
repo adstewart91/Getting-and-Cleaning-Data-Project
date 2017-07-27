@@ -56,7 +56,9 @@ y_data_combined <- rename(y_data_combined, "acty_num" = "V1")
 x_data_combined <- rename_all(x_data_combined, funs(data_labels$V2))
 
 ## Bring Activity Numbers together with Activity Labels:
-activity_combined <- merge(y_data_combined, activity_labels, key = acty_num, sort = FALSE)
+acty_names_vector <- as.vector(activity_labels$acty_name)
+activity_combined <- tbl_df(as.factor(acty_names_vector[y_data_combined$acty_num]))
+activity_combined <- rename(activity_combined, "acty_name" = value)
 
 ## Column Bind All Data Into One Large Combined Dataset:
 combined_dataset <- cbind(subjects_combined, activity_combined, x_data_combined)
@@ -82,14 +84,14 @@ final_datanames <- as.character(data_labels$V2[final_vector])
         ## character vector of measurement names
 
 ## Extract the subject number column and measurement columns:
-final_extract <- tbl_df(combined_dataset[,c("subject_num", final_datanames)])
+final_extract <- tbl_df(combined_dataset[,c("subject_num", "acty_name", final_datanames)])
 
 ## Create Tidy Dataset grouped by subject number:
-subject_group <- group_by(final_extract, subject_num) ## group by subject number
-independent_tidydataset <- summarize_all(subject_group, funs(mean)) ## summarize with mean
+subject_group <- group_by(final_extract, subject_num, acty_name) ## group by subject number 
+independent_tidydataset <- summarise_all(subject_group, funs(mean)) 
 
 ## Tidy-Up column names of the results with read-able column names:
-tidy_colnames <- c("subject number", "body acceleration mean-X", "body acceleration mean-Y",      
+tidy_colnames <- c("subject number", "activity type", "body acceleration mean-X", "body acceleration mean-Y",      
 "body acceleration mean-Z", "body acceleration std dev-X", "body acceleration std dev-Y",      
 "body acceleration std dev-Z", "body acceleration jerk mean-X", "body acceleration jerk mean-Y",
 "body acceleration jerk mean-Z", "body acceleration jerk std dev-X", "body acceleration jerk std dev-Y", 
@@ -119,7 +121,6 @@ write.table(independent_tidydataset, file = "project_tidy_dataset.txt", row.name
 
 write.csv(independent_tidydataset, file = "project_tidy_dataset.csv")
 ## writes the tidy dataset to .csv file in the local project directory
-
 
 
 

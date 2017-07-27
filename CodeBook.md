@@ -96,13 +96,15 @@ y_data_combined <- rename(y_data_combined, "acty_num" = "V1")
 x_data_combined <- rename_all(x_data_combined, funs(data_labels$V2))
 
 ## Bring Activity Numbers together with Activity Labels:
-activity_combined <- merge(y_data_combined, activity_labels, key = acty_num, sort = FALSE)
+acty_names_vector <- as.vector(activity_labels$acty_name)
+activity_combined <- tbl_df(as.factor(acty_names_vector[y_data_combined$acty_num]))
+activity_combined <- rename(activity_combined, "acty_name" = value)
+
 ```
 
 ### Step 5:  Column Bind All Data Into One Large Combined Dataset *combined_dataset*:
 
-Display characteristics of *combined_dataset* using `str(combined_dataset)` to demonstrate that the R script satisfies the **Project requirement:**
-### **1. Merges the training and the test sets to create one data set.**
+Display characteristics of *combined_dataset* using `str(combined_dataset)` to demonstrate that the R script satisfies the **Project requirement:  1. Merges the training and the test sets to create one data set.**
 
 Data rows are by Subject Number and the dataset preserves the activity number with corresponding activity number keyed-activity labels.  
 
@@ -110,7 +112,7 @@ Data rows are by Subject Number and the dataset preserves the activity number wi
 ## Column Bind All Data Into One Large Combined Dataset:
 combined_dataset <- cbind(subjects_combined, activity_combined, x_data_combined)
 
-str(combined_dataset) ## Provides detailed summary of Large Combined Dataset
+str(combined_dataset)
 ```
 ### Step 6:  Extract the measurements on the mean and standard deviation for each measurement:
 
@@ -153,11 +155,11 @@ final_datanames <- as.character(data_labels$V2[final_vector])
         ## character vector of measurement names
 
 ## Extract the subject number column and measurement columns:
-final_extract <- tbl_df(combined_dataset[,c("subject_num", final_datanames)])
+final_extract <- tbl_df(combined_dataset[,c("subject_num", "acty_name", final_datanames)])
 
 ## Create Tidy Dataset grouped by subject number:
-subject_group <- group_by(final_extract, subject_num) ## group by subject number
-independent_tidydataset <- summarize_all(subject_group, funs(mean)) ## summarize with mean
+subject_group <- group_by(final_extract, subject_num, acty_name) ## group by subject number 
+independent_tidydataset <- summarise_all(subject_group, funs(mean)) 
 ```
 
 ### Step 7: Provide read-able column names to the data for a Tidy Dataset
@@ -165,10 +167,10 @@ independent_tidydataset <- summarize_all(subject_group, funs(mean)) ## summarize
 ### Satisfies Project Requirement:  5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
 
 Tidy Data Set Rows are the Subjects and are linked to each Observation Column of Mean and Std Dev.
-
+*(Could have done this with more interesting character sorting and replacment code)*
 ```{r }
 ## Tidy-Up column names of the results with read-able column names:
-tidy_colnames <- c("subject number", "body acceleration mean-X", "body acceleration mean-Y",      
+tidy_colnames <- c("subject number", "activity type", "body acceleration mean-X", "body acceleration mean-Y",      
 "body acceleration mean-Z", "body acceleration std dev-X", "body acceleration std dev-Y",      
 "body acceleration std dev-Z", "body acceleration jerk mean-X", "body acceleration jerk mean-Y",
 "body acceleration jerk mean-Z", "body acceleration jerk std dev-X", "body acceleration jerk std dev-Y", 
@@ -185,6 +187,7 @@ tidy_colnames <- c("subject number", "body acceleration mean-X", "body accelerat
 
 ## Apply new tidy column names to the Tidy Dataset:
 names(independent_tidydataset) <- tidy_colnames
+
 ```
 
 ### Step 8: Print the Tidy Dataset in a read-able output format write to .txt and .csv files
